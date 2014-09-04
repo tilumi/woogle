@@ -1,0 +1,29 @@
+#!/bin/bash
+
+cd `dirname $0`/..
+
+function printUsage(){
+	    echo "
+    Usage: `basename $0` {arg}
+    arg AS
+  
+    start		Start WebSearchEngine
+    
+    stop  		Stop WebSearchEngine
+        	
+    import		Import documents to ElasticSearch
+    "
+    exit 0;
+}
+
+action="$1";
+
+shift;
+
+if [ "$action" == "start" ]; then
+	java -cp "ElasticSearchClient-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine	
+elif [ "$action" == "import" ]; then
+	java -cp "ElasticSearchClient-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
+else
+	printUsage	
+fi;

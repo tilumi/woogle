@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:security="http://www.springframework.org/schema/security"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+          http://www.springframework.org/schema/security
+          http://www.springframework.org/schema/security/spring-security.xsd">
+
+	<security:authentication-manager alias="authenticationManager">
+		<security:authentication-provider
+			ref="clientProvider" />
+	</security:authentication-manager>
+
+	<!-- urls and security configuration -->
+	<security:http pattern="/**" entry-point-ref="googleEntryPoint">
+		<security:custom-filter after="CAS_FILTER" ref="clientFilter" />
+		<security:custom-filter position="LAST"
+			ref="validUserFilter" />
+		<security:intercept-url pattern="**.js"
+			access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<security:intercept-url pattern="**.css"
+			access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<security:intercept-url pattern="/home/**"
+			access="IS_AUTHENTICATED_ANONYMOUSLY" />
+		<security:intercept-url pattern="/**"
+			access="IS_AUTHENTICATED_FULLY" />
+		<security:logout logout-success-url="/home/index.html" />
+	</security:http>
+
+	<!-- entry points -->
+	<bean id="googleEntryPoint"
+		class="org.pac4j.springframework.security.web.ClientAuthenticationEntryPoint">
+		<property name="client" ref="googleClient" />
+	</bean>
+
+	<!-- clients definition -->
+	<bean id="googleClient" class="org.pac4j.oauth.client.Google2Client">
+		<property name="key"
+			value="38784496266-h0st9eoj3vf1fv0u64cfv7vbpf638vnd.apps.googleusercontent.com" />
+		<property name="secret" value="T7dO_40ad57QAtBk0gK0LFHz" />
+	</bean>
+
+	<bean id="clients" class="org.pac4j.core.client.Clients">
+		<property name="callbackUrl" value="http://localhost:8090/callback" />
+		<property name="clients">
+			<list>
+				<ref bean="googleClient" />
+			</list>
+		</property>
+	</bean>
+
+	<!-- common to all clients -->
+	<bean id="clientFilter"
+		class="org.pac4j.springframework.security.web.ClientAuthenticationFilter">
+		<constructor-arg value="/callback" />
+		<property name="clients" ref="clients" />
+		<property name="sessionAuthenticationStrategy" ref="sas" />
+		<property name="authenticationManager" ref="authenticationManager" />
+	</bean>
+
+	<bean id="validUserFilter" class="tw.jms.loyal.web.filters.ValidateUserFilter">
+		<property name="dao" ref="dao" />
+	</bean>
+
+	<bean id="dao" class="tw.jms.loyal.dao.DaoFromFile"></bean>
+
+	<bean id="clientProvider"
+		class="org.pac4j.springframework.security.authentication.ClientAuthenticationProvider">
+		<property name="clients" ref="clients" />
+	</bean>
+
+	<bean id="sas"
+		class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy" />
+</beans>
