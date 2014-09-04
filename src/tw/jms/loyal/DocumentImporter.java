@@ -42,22 +42,23 @@ public class DocumentImporter {
 			IllegalArgumentException, InvocationTargetException, IOException,
 			SAXException, TikaException {
 		DocumentImporter importer = new DocumentImporter();
-		setArgs(args, importer);		
-		importer.run();
+		if (setArgs(args, importer)) {
+			importer.run();
+		}
 	}
 
-	private static void setArgs(String[] args, Object driver)
+	private static boolean setArgs(String[] args, Object driver)
 			throws IllegalAccessException, InvocationTargetException {
 		List<String> argumentsList = getDriverArguments(driver.getClass());
 		if (argumentsList.size() != args.length) {
 			printDriverUsage(driver.getClass());
-			return;
+			return false;
 		}
 
 		Method[] methods = driver.getClass().getMethods();
 		for (Method method : methods) {
 			InputParams inputParams = method.getAnnotation(InputParams.class);
-			if (inputParams != null) {				
+			if (inputParams != null) {
 				Class<?>[] types = method.getParameterTypes();
 				Object[] object = new Object[types.length];
 				for (int i = 0; i < types.length; i++) {
@@ -83,12 +84,13 @@ public class DocumentImporter {
 								+ typeStr);
 					}
 				}
-				for(Object o : object){
+				for (Object o : object) {
 					System.out.println(o);
-				}				
+				}
 				method.invoke(driver, object);
 			}
-		}		
+		}
+		return true;
 	}
 
 	private static List<String> getDriverArguments(Class<?> driverClass) {
