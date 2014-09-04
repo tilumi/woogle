@@ -21,9 +21,9 @@ action="$1";
 shift;
 
 if [ "$action" == "start" ]; then
-	java -cp "ElasticSearchClient-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine	
+	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine	
 elif [ "$action" == "import" ]; then
-	java -cp "ElasticSearchClient-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
+	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
 else
 	printUsage	
 fi;
