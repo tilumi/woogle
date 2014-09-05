@@ -10,9 +10,9 @@ public class DbAdmin {
 		if(args.length==0){
 			printUsage();
 		}else if(args[0].equals("initialize")){
-			ElasticSearchDao.forceCreateIndex(IndexConstants.INDEX_PROVIDENCE, IndexConstants.TYPE_WORD);	
+			ElasticSearchDao.createIndex(IndexConstants.INDEX_PROVIDENCE, IndexConstants.TYPE_WORD);	
 		}else if(args[0].equals("destroy")){
-			
+			ElasticSearchDao.deleteIndex(IndexConstants.INDEX_PROVIDENCE);
 		}else{
 			printUsage();
 		}

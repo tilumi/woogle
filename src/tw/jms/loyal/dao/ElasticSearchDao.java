@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
@@ -64,7 +65,13 @@ public class ElasticSearchDao {
 		if (res.isExists()) {
 			final DeleteIndexRequestBuilder delIdx = client.admin().indices()
 					.prepareDelete(index);
-			delIdx.execute().actionGet();
+			DeleteIndexResponse deleteIndexResponse = delIdx.execute()
+					.actionGet();
+			if (deleteIndexResponse.isAcknowledged()) {
+				LOG.info("Delete Index: " + index + " succeed!");
+			} else {
+				LOG.info("Delete Index: " + index + " failed!");
+			}
 		}
 		client.close();
 	}
@@ -88,9 +95,8 @@ public class ElasticSearchDao {
 		return true;
 	}
 
-	public static void forceCreateIndex(String index, String type) {
+	public static void createIndex(String index, String type) {
 		Client client = ElasticSearchConnection.get();
-		deleteIndex(index);
 
 		final CreateIndexRequestBuilder createIndexRequestBuilder = client
 				.admin().indices().prepareCreate(index);
