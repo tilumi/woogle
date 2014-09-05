@@ -137,6 +137,10 @@ public class DocumentImporter {
 		Client client = ElasticSearchConnection.get();
 		int i = 1;
 		for (File word : files) {
+			if (word.getName().contains("韓中")
+					|| word.getName().contains("kor_chi")) {
+				continue;
+			}
 			InputStream in = new FileInputStream(word);
 			BodyContentHandler textHandler = new BodyContentHandler();
 			Metadata metadata = new Metadata();
