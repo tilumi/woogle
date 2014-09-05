@@ -25,5 +25,6 @@
 	<classpathentry kind="lib" path="lib/jurt-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/ridl-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/unoil-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/ZHConverter.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

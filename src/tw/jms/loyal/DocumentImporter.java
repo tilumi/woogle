@@ -31,6 +31,7 @@ import tw.jms.loyal.utils.InputParams;
 import tw.jms.loyal.utils.Md5Utils;
 
 import com.google.common.base.Splitter;
+import com.spreada.utils.chinese.ZHConverter;
 
 public class DocumentImporter {
 
@@ -164,6 +165,8 @@ public class DocumentImporter {
 			String lastModified, String content, String htmlContent,
 			boolean force) {
 		String id = Md5Utils.getMD5String(content);
+		ZHConverter converter = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
+		String simplifiedContet = converter.convert(content);
 		if (!force) {
 			GetResponse getResponse = ElasticSearchDao.get(id);
 			if (getResponse.isExists()) {
@@ -172,7 +175,7 @@ public class DocumentImporter {
 		}
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("title", title);
-		json.put("content", content);
+		json.put("content", simplifiedContet);
 		json.put("html", htmlContent);
 		json.put("lastModified", lastModified);
 		IndexResponse response = client

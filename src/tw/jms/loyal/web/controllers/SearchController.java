@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.spreada.utils.chinese.ZHConverter;
+
 import tw.jms.loyal.dao.ElasticSearchDao;
 import tw.jms.loyal.property.EnvConstants;
 import tw.jms.loyal.property.EnvProperty;
@@ -35,13 +37,18 @@ public class SearchController {
 		if (q == null || q.isEmpty()) {
 			return "search/index";
 		} else {
-
+			ZHConverter simplifiedConverter = ZHConverter
+					.getInstance(ZHConverter.SIMPLIFIED);
+			ZHConverter traditionalConverter = ZHConverter
+					.getInstance(ZHConverter.TRADITIONAL);
+			String simplifiedQ = simplifiedConverter.convert(q);
 			if (page == null) {
 				page = 1;
 			}
 			int from = page * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			int size = EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
-			SearchHits searchHits = ElasticSearchDao.query(q, from, size);
+			SearchHits searchHits = ElasticSearchDao.query(simplifiedQ, from,
+					size);
 			List<Map<String, Object>> result = StreamSupport
 					.stream(searchHits.spliterator(), false)
 					.map(searchHit -> {
@@ -50,8 +57,9 @@ public class SearchController {
 										HashMap.class);
 						hit.put("id", searchHit.getId());
 						hit.put("content",
-								searchHit.highlightFields().get("content")
-										.getFragments()[0].toString());
+								traditionalConverter.convert(searchHit
+										.highlightFields().get("content")
+										.getFragments()[0].toString()));
 						return hit;
 					}).collect(Collectors.toList());
 			model.addAttribute("result",
@@ -61,4 +69,5 @@ public class SearchController {
 			return "search/result";
 		}
 	}
+	
 }
