@@ -24,7 +24,7 @@ public class ElasticSearchDao {
 
 	private static Logger LOG = Logger.getLogger(ElasticSearchDao.class);
 
-	public static SearchHits query(String q) {
+	public static SearchHits query(String q, int from, int size) {
 
 		Client client = ElasticSearchConnection.get();
 		SearchHits hits = null;
@@ -39,8 +39,8 @@ public class ElasticSearchDao {
 		SearchResponse response = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD)
-				.setQuery(functionScoreQueryBuilder)
-				.addHighlightedField("content", 100, 1)
+				.setQuery(functionScoreQueryBuilder).setFrom(from)
+				.setSize(size).addHighlightedField("content", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>").setExplain(true).execute()
 				.actionGet();

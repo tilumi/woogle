@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import tw.jms.loyal.dao.ElasticSearchDao;
+import tw.jms.loyal.property.EnvConstants;
+import tw.jms.loyal.property.EnvProperty;
 import tw.jms.loyal.utils.SerializationUtils;
 
 @Controller
@@ -27,12 +29,19 @@ public class SearchController {
 	private static Logger LOG = Logger.getLogger(SearchController.class);
 
 	@RequestMapping(value = "index", method = RequestMethod.GET)
-	public String index(Model model, @RequestParam(required = false) String q)
+	public String index(Model model, @RequestParam(required = false) String q,
+			@RequestParam(required = false) Integer page)
 			throws JsonParseException, JsonMappingException, IOException {
 		if (q == null || q.isEmpty()) {
 			return "search/index";
 		} else {
-			SearchHits searchHits = ElasticSearchDao.query(q);
+
+			if (page == null) {
+				page = 1;
+			}
+			int from = page * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
+			int size = EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
+			SearchHits searchHits = ElasticSearchDao.query(q, from, size);
 			List<Map<String, Object>> result = StreamSupport
 					.stream(searchHits.spliterator(), false)
 					.map(searchHit -> {
@@ -47,6 +56,8 @@ public class SearchController {
 					}).collect(Collectors.toList());
 			model.addAttribute("result",
 					SerializationUtils.toJsonString(result));
+			model.addAttribute("numOfPages",
+					EnvProperty.getInt(EnvConstants.NUM_OF_PAGES));
 			return "search/result";
 		}
 	}

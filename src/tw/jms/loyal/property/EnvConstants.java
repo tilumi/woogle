@@ -8,4 +8,6 @@ public class EnvConstants {
 	public static final String MYSQL_USER = "MYSQL_USER";
 	public static final String MYSQL_PASS = "MYSQL_PASS";
 	public static final String MYSQL_DB = "MYSQL_DB";
+	public static final String HITS_PER_PAGE = "HITS_PER_PAGE";
+	public static final String NUM_OF_PAGES = "NUM_OF_PAGES";
 }
