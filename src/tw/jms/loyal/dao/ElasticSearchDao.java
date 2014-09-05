@@ -9,6 +9,7 @@ import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRespon
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.FuzzyLikeThisQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
@@ -31,8 +32,10 @@ public class ElasticSearchDao {
 		String currentDate = DateTimeUtils.getDate(System.currentTimeMillis());
 		ScoreFunctionBuilder scoreFunction = new GaussDecayFunctionBuilder(
 				"lastModified", currentDate, "365d");
+		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
-				.fuzzyLikeThisQuery("content").likeText(q).maxQueryTerms(12);
+				.fuzzyLikeThisQuery("content").fuzziness(fuzziness).likeText(q)
+				.maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
 
