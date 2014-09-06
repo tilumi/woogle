@@ -10,6 +10,7 @@ import java.util.stream.StreamSupport;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHits;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -50,10 +51,11 @@ public class SearchController {
 			if (page == null) {
 				page = 1;
 			}
-			int from = (page-1) * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
+			int from = (page - 1)
+					* EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			int size = EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			SearchHits searchHits = ElasticSearchDao.query(q, from, size);
-			
+
 			List<Map<String, Object>> result = StreamSupport
 					.stream(searchHits.spliterator(), false)
 					.map(searchHit -> {
@@ -61,10 +63,19 @@ public class SearchController {
 								.fromJsonString(searchHit.getSourceAsString(),
 										HashMap.class);
 						hit.put("id", searchHit.getId());
+						String content = "";
+						Text[] contentHLFragments = searchHit.highlightFields()
+								.get("content").getFragments();
+//						Text[] titleHLFragments = searchHit.highlightFields()
+//								.get("title").getFragments();
+						if (contentHLFragments.length > 0) {
+							content = contentHLFragments[0].toString();
+						} else {
+							content = hit.get("content").toString()
+									.substring(0, 100);
+						}
 						hit.put("content",
-								traditionalConverter.convert(searchHit
-										.highlightFields().get("content")
-										.getFragments()[0].toString()));
+								traditionalConverter.convert(content));
 						return hit;
 					}).collect(Collectors.toList());
 			model.addAttribute("result",

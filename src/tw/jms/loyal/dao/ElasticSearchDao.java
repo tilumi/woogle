@@ -1,6 +1,9 @@
 package tw.jms.loyal.dao;
 
+import java.io.IOException;
+
 import org.apache.log4j.Logger;
+import org.apache.tika.io.IOUtils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
@@ -17,6 +20,7 @@ import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.gauss.GaussDecayFunctionBuilder;
 import org.elasticsearch.search.SearchHits;
+import org.springframework.core.io.ClassPathResource;
 
 import tw.jms.loyal.property.EnvConstants;
 import tw.jms.loyal.property.EnvProperty;
@@ -37,8 +41,8 @@ public class ElasticSearchDao {
 				"lastModified", currentDate, "365d");
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
-				.fuzzyLikeThisQuery("content").fuzziness(fuzziness).likeText(q)
-				.maxQueryTerms(12);
+				.fuzzyLikeThisQuery("content", "title").fuzziness(fuzziness)
+				.likeText(q).maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
 		SearchRequestBuilder search = client
@@ -46,6 +50,7 @@ public class ElasticSearchDao {
 				.setTypes(IndexConstants.TYPE_WORD)
 				.setQuery(functionScoreQueryBuilder).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
+				.addHighlightedField("title", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>");
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
@@ -114,9 +119,15 @@ public class ElasticSearchDao {
 				.admin().indices().prepareCreate(index);
 
 		// MAPPING GOES HERE
-		String mapping = "{\""
-				+ type
-				+ "\":{\"_all\":{\"indexAnalyzer\":\"ik\",\"searchAnalyzer\":\"ik\",\"term_vector\":\"no\",\"store\":\"false\"},\"properties\":{\"content\":{\"type\":\"string\",\"store\":\"no\",\"term_vector\":\"with_positions_offsets\",\"indexAnalyzer\":\"ik\",\"searchAnalyzer\":\"ik\",\"include_in_all\":\"true\",\"boost\":8}}}}";
+		String mapping = null;
+		try {
+			mapping = IOUtils.toString(new ClassPathResource("mapping/" + type + ".json")
+					.getInputStream());
+			mapping = mapping.replace("${type}", type);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		LOG.info("mapping:" + mapping);
 		createIndexRequestBuilder.addMapping(type, mapping);
 
 		// MAPPING DONE

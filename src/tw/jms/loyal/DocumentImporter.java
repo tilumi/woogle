@@ -157,10 +157,13 @@ public class DocumentImporter {
 			AutoDetectParser parser = new AutoDetectParser();
 			parser.parse(in, textHandler, metadata);
 			in.close();
-			String title = metadata.get(Metadata.RESOURCE_NAME_KEY);
 			String lastModified = metadata.get(Metadata.LAST_MODIFIED);
 			String content = textHandler.toString();
 			String htmlContent = HtmlConvertor.convert(word, htmlFolder, force);
+			String title = FeatureExtractor.getTitle(htmlContent);
+			if (title == null || title.isEmpty()) {
+				title = metadata.get(Metadata.RESOURCE_NAME_KEY);
+			}
 			importToES(client, title, lastModified, content, htmlContent, force);
 			System.out.println("Files to index: " + i + "/" + files.size());
 			i++;
@@ -175,13 +178,13 @@ public class DocumentImporter {
 		String id = Md5Utils.getMD5String(content);
 		boolean isStoreInSimplifiedChinese = EnvProperty
 				.getBoolean(EnvConstants.IS_STORE_IN_SIMPLIFIED_CHINESE);
-		
+
 		if (isStoreInSimplifiedChinese) {
 			ZHConverter converter = ZHConverter
 					.getInstance(ZHConverter.SIMPLIFIED);
 			content = converter.convert(content);
 		}
-		
+
 		if (!force) {
 			GetResponse getResponse = ElasticSearchDao.get(id);
 			if (getResponse.isExists()) {
