@@ -18,6 +18,8 @@ import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.gauss.GaussDecayFunctionBuilder;
 import org.elasticsearch.search.SearchHits;
 
+import tw.jms.loyal.property.EnvConstants;
+import tw.jms.loyal.property.EnvProperty;
 import tw.jms.loyal.utils.DateTimeUtils;
 import tw.jms.loyal.utils.ElasticSearchConnection;
 import tw.jms.loyal.utils.IndexConstants;
@@ -45,10 +47,15 @@ public class ElasticSearchDao {
 				.setQuery(functionScoreQueryBuilder).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
-				.setHighlighterPostTags("</em>").setExplain(true);
-		LOG.info("request: " + search.toString());
+				.setHighlighterPostTags("</em>");
+		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
+			search.setExplain(true);
+			LOG.info("request: " + search.toString());
+		}
 		SearchResponse response = search.execute().actionGet();
-		LOG.info("response: " + response.toString());
+		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
+			LOG.info("response: " + response.toString());
+		}
 		hits = response.getHits();
 		client.close();
 		return hits;

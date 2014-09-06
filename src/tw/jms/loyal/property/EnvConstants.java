@@ -11,4 +11,5 @@ public class EnvConstants {
 	public static final String HITS_PER_PAGE = "HITS_PER_PAGE";
 	public static final String NUM_OF_PAGES = "NUM_OF_PAGES";
 	public static final String IS_STORE_IN_SIMPLIFIED_CHINESE = "IS_STORE_IN_SIMPLIFIED_CHINESE";
+	public static final String DEBUG = "DEBUG";
 }
