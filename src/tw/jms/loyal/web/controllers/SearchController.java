@@ -41,14 +41,19 @@ public class SearchController {
 					.getInstance(ZHConverter.SIMPLIFIED);
 			ZHConverter traditionalConverter = ZHConverter
 					.getInstance(ZHConverter.TRADITIONAL);
-			String simplifiedQ = simplifiedConverter.convert(q);
+			boolean isStoreInSimplifiedChinese = EnvProperty
+					.getBoolean(EnvConstants.IS_STORE_IN_SIMPLIFIED_CHINESE);
+
+			if (isStoreInSimplifiedChinese) {
+				q = simplifiedConverter.convert(q);
+			}
 			if (page == null) {
 				page = 1;
 			}
 			int from = page * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			int size = EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
-			SearchHits searchHits = ElasticSearchDao.query(simplifiedQ, from,
-					size);
+			SearchHits searchHits = ElasticSearchDao.query(q, from, size);
+			LOG.info(searchHits.toString());
 			List<Map<String, Object>> result = StreamSupport
 					.stream(searchHits.spliterator(), false)
 					.map(searchHit -> {
@@ -69,5 +74,5 @@ public class SearchController {
 			return "search/result";
 		}
 	}
-	
+
 }
