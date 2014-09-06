@@ -50,10 +50,10 @@ public class SearchController {
 			if (page == null) {
 				page = 1;
 			}
-			int from = page * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
+			int from = (page-1) * EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			int size = EnvProperty.getInt(EnvConstants.HITS_PER_PAGE);
 			SearchHits searchHits = ElasticSearchDao.query(q, from, size);
-			LOG.info(searchHits.toString());
+			
 			List<Map<String, Object>> result = StreamSupport
 					.stream(searchHits.spliterator(), false)
 					.map(searchHit -> {
