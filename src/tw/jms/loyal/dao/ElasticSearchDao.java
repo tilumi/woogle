@@ -7,6 +7,7 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.Fuzziness;
@@ -38,16 +39,16 @@ public class ElasticSearchDao {
 				.maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
-
-		SearchResponse response = client
+		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD)
 				.setQuery(functionScoreQueryBuilder).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
-				.setHighlighterPostTags("</em>").setExplain(true).execute()
-				.actionGet();
-		LOG.info(response.toString());
+				.setHighlighterPostTags("</em>").setExplain(true);
+		LOG.info("request: " + search.toString());
+		SearchResponse response = search.execute().actionGet();
+		LOG.info("response: " + response.toString());
 		hits = response.getHits();
 		client.close();
 		return hits;
