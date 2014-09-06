@@ -24,6 +24,8 @@ import org.elasticsearch.client.Client;
 import org.xml.sax.SAXException;
 
 import tw.jms.loyal.dao.ElasticSearchDao;
+import tw.jms.loyal.property.EnvConstants;
+import tw.jms.loyal.property.EnvProperty;
 import tw.jms.loyal.utils.ElasticSearchConnection;
 import tw.jms.loyal.utils.HtmlConvertor;
 import tw.jms.loyal.utils.IndexConstants;
@@ -133,8 +135,14 @@ public class DocumentImporter {
 	}
 
 	public void run() throws IOException, SAXException, TikaException {
-		Collection<File> files = FileUtils.listFiles(new File(inputFolder),
-				new String[] { "docx" }, true);
+		Collection<File> files = null;
+		if (new File(inputFolder).isDirectory()) {
+			files = FileUtils.listFiles(new File(inputFolder),
+					new String[] { "docx" }, true);
+		} else {
+			files = new ArrayList<File>();
+			files.add(new File(inputFolder));
+		}
 		Client client = ElasticSearchConnection.get();
 		int i = 1;
 		for (File word : files) {
@@ -165,8 +173,15 @@ public class DocumentImporter {
 			String lastModified, String content, String htmlContent,
 			boolean force) {
 		String id = Md5Utils.getMD5String(content);
-		ZHConverter converter = ZHConverter.getInstance(ZHConverter.SIMPLIFIED);
-		String simplifiedContet = converter.convert(content);
+		boolean isStoreInSimplifiedChinese = EnvProperty
+				.getBoolean(EnvConstants.IS_STORE_IN_SIMPLIFIED_CHINESE);
+		
+		if (isStoreInSimplifiedChinese) {
+			ZHConverter converter = ZHConverter
+					.getInstance(ZHConverter.SIMPLIFIED);
+			content = converter.convert(content);
+		}
+		
 		if (!force) {
 			GetResponse getResponse = ElasticSearchDao.get(id);
 			if (getResponse.isExists()) {
@@ -175,7 +190,7 @@ public class DocumentImporter {
 		}
 		Map<String, Object> json = new HashMap<String, Object>();
 		json.put("title", title);
-		json.put("content", simplifiedContet);
+		json.put("content", content);
 		json.put("html", htmlContent);
 		json.put("lastModified", lastModified);
 		IndexResponse response = client
