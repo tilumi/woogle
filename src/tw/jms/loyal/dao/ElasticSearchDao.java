@@ -47,6 +47,7 @@ public class ElasticSearchDao {
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>").setExplain(true).execute()
 				.actionGet();
+		LOG.info(response.toString());
 		hits = response.getHits();
 		client.close();
 		return hits;
