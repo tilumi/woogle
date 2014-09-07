@@ -1,3 +1,5 @@
+#/bin/bash
+
 yum update
 yum install -y curl
 yum install -y wget
