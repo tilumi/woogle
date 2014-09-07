@@ -38,7 +38,7 @@ public class ElasticSearchDao {
 		SearchHits hits = null;
 		String currentDate = DateTimeUtils.getDate(System.currentTimeMillis());
 		ScoreFunctionBuilder scoreFunction = new GaussDecayFunctionBuilder(
-				"lastModified", currentDate, "365d");
+				"lastModified", currentDate, "90d");
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
 				.fuzzyLikeThisQuery("content", "title").fuzziness(fuzziness)
@@ -121,8 +121,8 @@ public class ElasticSearchDao {
 		// MAPPING GOES HERE
 		String mapping = null;
 		try {
-			mapping = IOUtils.toString(new ClassPathResource("mapping/" + type + ".json")
-					.getInputStream());
+			mapping = IOUtils.toString(new ClassPathResource("mapping/" + type
+					+ ".json").getInputStream());
 			mapping = mapping.replace("${type}", type);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

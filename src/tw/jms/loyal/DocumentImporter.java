@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -21,6 +22,8 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.Client;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.xml.sax.SAXException;
 
 import tw.jms.loyal.dao.ElasticSearchDao;
@@ -31,6 +34,7 @@ import tw.jms.loyal.utils.HtmlConvertor;
 import tw.jms.loyal.utils.IndexConstants;
 import tw.jms.loyal.utils.InputParams;
 import tw.jms.loyal.utils.Md5Utils;
+import tw.jms.loyal.web.controllers.SearchController;
 
 import com.google.common.base.Splitter;
 import com.spreada.utils.chinese.ZHConverter;
@@ -40,6 +44,8 @@ public class DocumentImporter {
 	private String inputFolder;
 	private String htmlFolder;
 	private boolean force;
+
+	private static Logger LOG = Logger.getLogger(SearchController.class);
 
 	public static void main(String[] args) throws IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException, IOException,
@@ -148,23 +154,29 @@ public class DocumentImporter {
 		for (File word : files) {
 			if (word.getName().contains("韓中")
 					|| word.getName().contains("kor_chi")) {
+				i++;
 				continue;
 			}
 			InputStream in = new FileInputStream(word);
 			BodyContentHandler textHandler = new BodyContentHandler();
 			Metadata metadata = new Metadata();
-			metadata.add(Metadata.RESOURCE_NAME_KEY, word.getName());
 			AutoDetectParser parser = new AutoDetectParser();
 			parser.parse(in, textHandler, metadata);
 			in.close();
-			String lastModified = metadata.get(Metadata.LAST_MODIFIED);
 			String content = textHandler.toString();
 			String htmlContent = HtmlConvertor.convert(word, htmlFolder, force);
 			String title = FeatureExtractor.getTitle(htmlContent);
-			if (title == null || title.isEmpty()) {
-				title = metadata.get(Metadata.RESOURCE_NAME_KEY);
+			String publishDate = FeatureExtractor.getPublishDate(
+					word.getName(), content);
+			String lastModified = metadata.get(Metadata.LAST_MODIFIED);
+			if (publishDate == null || publishDate.isEmpty()) {
+				publishDate = lastModified;
 			}
-			importToES(client, title, lastModified, content, htmlContent, force);
+			if (title == null || title.isEmpty()) {
+				title = word.getName();
+			}
+			importToES(client, title, publishDate, lastModified, content,
+					htmlContent, force);
 			System.out.println("Files to index: " + i + "/" + files.size());
 			i++;
 		}
@@ -173,8 +185,8 @@ public class DocumentImporter {
 	}
 
 	private static void importToES(Client client, String title,
-			String lastModified, String content, String htmlContent,
-			boolean force) {
+			String publishDate, String lastModified, String content,
+			String htmlContent, boolean force) {
 		String id = Md5Utils.getMD5String(content);
 		boolean isStoreInSimplifiedChinese = EnvProperty
 				.getBoolean(EnvConstants.IS_STORE_IN_SIMPLIFIED_CHINESE);
@@ -183,6 +195,7 @@ public class DocumentImporter {
 			ZHConverter converter = ZHConverter
 					.getInstance(ZHConverter.SIMPLIFIED);
 			content = converter.convert(content);
+			title = converter.convert(title);
 		}
 
 		if (!force) {
@@ -195,7 +208,11 @@ public class DocumentImporter {
 		json.put("title", title);
 		json.put("content", content);
 		json.put("html", htmlContent);
+		json.put("publishDate", publishDate);
 		json.put("lastModified", lastModified);
+		LOG.info("Title: " + title);
+		LOG.info("Publish Date: " + publishDate);
+		LOG.info("Last Modified: " + lastModified);
 		IndexResponse response = client
 				.prepareIndex(IndexConstants.INDEX_PROVIDENCE,
 						IndexConstants.TYPE_WORD, id).setSource(json).execute()

@@ -10,7 +10,7 @@
          "content":{  
             "type":"string",
             "store":"no",
-            "term_vector":"with_positions_offsets",
+            "term_vector":"with_positions_offsets_payloads",
             "indexAnalyzer":"ik",
             "searchAnalyzer":"ik",
             "include_in_all":"true",
@@ -19,11 +19,17 @@
          "title":{  
             "type":"string",
             "store":"no",
-            "term_vector":"with_positions_offsets",
+            "term_vector":"with_positions_offsets_payloads",
             "indexAnalyzer":"ik",
             "searchAnalyzer":"ik",
             "include_in_all":"true",
             "boost":5
+         },"html":{  
+            "type":"string",
+            "index" : "no",
+            "store":"no",
+            "term_vector":"no",
+            "include_in_all":"false"
          }
       }
    }

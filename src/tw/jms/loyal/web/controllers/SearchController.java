@@ -18,12 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.spreada.utils.chinese.ZHConverter;
-
 import tw.jms.loyal.dao.ElasticSearchDao;
 import tw.jms.loyal.property.EnvConstants;
 import tw.jms.loyal.property.EnvProperty;
 import tw.jms.loyal.utils.SerializationUtils;
+
+import com.spreada.utils.chinese.ZHConverter;
 
 @Controller
 @RequestMapping("/search")
@@ -64,18 +64,30 @@ public class SearchController {
 										HashMap.class);
 						hit.put("id", searchHit.getId());
 						String content = "";
-						Text[] contentHLFragments = searchHit.highlightFields()
-								.get("content").getFragments();
-//						Text[] titleHLFragments = searchHit.highlightFields()
-//								.get("title").getFragments();
-						if (contentHLFragments.length > 0) {
+						String title = "";
+						try {
+							Text[] titleHLFragments = searchHit
+									.highlightFields().get("title")
+									.getFragments();
+							title = titleHLFragments[0].toString();
+						} catch (Exception e) {
+							title = hit.get("title").toString();
+						}
+						try {
+							Text[] contentHLFragments = searchHit
+									.highlightFields().get("content")
+									.getFragments();
 							content = contentHLFragments[0].toString();
-						} else {
+						} catch (Exception e) {
 							content = hit.get("content").toString()
 									.substring(0, 100);
 						}
-						hit.put("content",
-								traditionalConverter.convert(content));
+						if (isStoreInSimplifiedChinese) {
+							content = traditionalConverter.convert(content);
+							title = traditionalConverter.convert(title);
+						}
+						hit.put("content", content);
+						hit.put("title", title);
 						return hit;
 					}).collect(Collectors.toList());
 			model.addAttribute("result",
@@ -85,5 +97,4 @@ public class SearchController {
 			return "search/result";
 		}
 	}
-
 }
