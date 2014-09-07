@@ -27,13 +27,13 @@ shift;
 currentDateTime=`date +"%Y-%m-%d_%H-%M-%S"`
 
 if [ "$action" == "start" ]; then
-	nohup java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine > log/"$currentDateTime"_web.log &	
+	nohup java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine > /var/log/woogle/"$currentDateTime"_web.log &	
 elif [ "$action" == "download" ]; then
 	source etc/config-default.properties
 	source etc/config.properties
-	nohup ruby libexec/heavensculreCrawler/fetch.rb "$WORD_DIR" > log/"$currentDateTime"_download.log &
+	ruby libexec/heavensculreCrawler/fetch.rb "$WORD_DIR"
 elif [ "$action" == "import" ]; then
-	nohup java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@ > log/"$currentDateTime"_import.log &
+	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
 elif [ "$action" == "dbAdmin" ]; then
 	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DbAdmin $@
 else
