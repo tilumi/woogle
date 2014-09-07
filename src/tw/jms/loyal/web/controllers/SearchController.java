@@ -74,6 +74,12 @@ public class SearchController {
 							title = hit.get("title").toString();
 						}
 						try {
+							hit.put("publishDate", hit.get("publishDate")
+									.toString().substring(0, 10));
+						} catch (Exception e) {
+						}
+
+						try {
 							Text[] contentHLFragments = searchHit
 									.highlightFields().get("content")
 									.getFragments();
