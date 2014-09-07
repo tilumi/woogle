@@ -3,6 +3,7 @@ require 'rubygems'
 require 'mechanize'
 require 'sqlite3'
 require 'fileutils'
+require 'Parallel'
 
 
 if ARGV.length != 1
@@ -74,7 +75,7 @@ end
 
 def download(board_title, link)
 	dest_dir = File.join(ROOT_DIR, board_title)
-	FileUtils.mkdir_p(dest_dir) unless File.exists? dest_dir	
+	FileUtils.mkdir_p(dest_dir) unless File.exists? dest_dir
 	dest_file_path = File.join(ROOT_DIR, board_title, link.text.strip)
 	if link.href.index('attach=')
 		attach_id = link.href[link.href.index('attach=')+'attach='.length..-1]
@@ -90,32 +91,31 @@ end
 boards.each do |board|
 	board_title = board[:title]
 	p "board: #{board_title}"
-	catch :jump_to_next_board do
-		board_page = @agent.get("http://heavensculture.com/index.php?board=#{board[:id]}.0")		
-		max_page_number = get_last_page_number(board_page)
-		p "last_page: #{max_page_number}"
-		(1..max_page_number).each do |page_num|
-			p page_num
-			if page_num > 1
-				board_page = goto_page(board_page, page_num)
-			end
-			board_page.search('.subject a').each do |link|
-				unless link['href'].nil?
-					page = @agent.get(link['href'])
-					if has_td_chinese_version? page
-						page.links.each do |link|
-							if link.text.rindex('.')
-								if exts_to_download.include? link.text[link.text.rindex('.')..-1] and link.text.include? '繁體'
-									download(board_title, link)
-								end
+
+	board_page = @agent.get("http://heavensculture.com/index.php?board=#{board[:id]}.0")
+	max_page_number = get_last_page_number(board_page)
+	p "last_page: #{max_page_number}"
+	Parallel.each((1..max_page_number), :in_processes=>4) do |page_num|
+		p page_num
+		if page_num > 1
+			board_page = goto_page(board_page, page_num)
+		end
+		Parallel.each(board_page.search('.subject a'), :in_threads => 10) do |link|
+			unless link['href'].nil?
+				page = @agent.get(link['href'])
+				if has_td_chinese_version? page
+					page.links.each do |link|
+						if link.text.rindex('.')
+							if exts_to_download.include? link.text[link.text.rindex('.')..-1] and link.text.include? '繁體'
+								download(board_title, link)
 							end
 						end
-					else
-						page.links.each do |link|
-							if link.text.rindex('.')
-								if exts_to_download.include? link.text[link.text.rindex('.')..-1]
-									download(board_title, link)
-								end
+					end
+				else
+					page.links.each do |link|
+						if link.text.rindex('.')
+							if exts_to_download.include? link.text[link.text.rindex('.')..-1]
+								download(board_title, link)
 							end
 						end
 					end
