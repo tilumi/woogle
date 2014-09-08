@@ -1,3 +1,4 @@
 target
 output
 dependency-reduced-pom.xml
+/bin/

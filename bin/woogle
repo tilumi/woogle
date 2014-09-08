@@ -31,7 +31,9 @@ if [ "$action" == "start" ]; then
 elif [ "$action" == "download" ]; then
 	source etc/config-default.properties
 	source etc/config.properties
-	ruby libexec/heavensculreCrawler/fetch.rb "$WORD_DIR"
+	cd libexec/heavensculreCrawler
+	bundle
+	ruby fetch.rb "$WORD_DIR"
 elif [ "$action" == "import" ]; then
 	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
 elif [ "$action" == "dbAdmin" ]; then
