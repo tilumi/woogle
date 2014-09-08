@@ -12,6 +12,10 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHits;
+import org.pac4j.oauth.profile.google2.Google2Profile;
+import org.pac4j.springframework.security.authentication.ClientAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +39,15 @@ public class SearchController {
 	public String index(Model model, @RequestParam(required = false) String q,
 			@RequestParam(required = false) Integer page)
 			throws JsonParseException, JsonMappingException, IOException {
+		Authentication token = SecurityContextHolder.getContext()
+				.getAuthentication();
+		if (token instanceof ClientAuthenticationToken) {
+			ClientAuthenticationToken clientToken = (ClientAuthenticationToken) token;
+			Google2Profile userProfile = (Google2Profile) clientToken
+					.getUserProfile();
+			model.addAttribute("user", userProfile.getEmail());
+		}
+
 		if (q == null || q.isEmpty()) {
 			return "search/index";
 		} else {

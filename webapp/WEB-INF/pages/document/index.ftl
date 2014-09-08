@@ -17,12 +17,7 @@
 			<![endif]-->
 		</head>
 		<body>
-			<nav class="navbar navbar-inverse">
-				<a class="navbar-brand" href="#">Woogle</a>
-				<ul class="nav navbar-nav">				
-				</ul>
-			</nav>
-			<h1 class="text-center"><a href="/search/index.html">Start Search</a></h1>
+			${content};
 
 			<!-- jQuery -->
 			<script src="//code.jquery.com/jquery.js"></script>
