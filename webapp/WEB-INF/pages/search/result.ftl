@@ -82,7 +82,7 @@
 					}
 					currentPage++;
 				}
-				return new Array(numOfPages);
+				return pages;
 			}
 			$scope.formatContent = function(content){				
 				return content.substring(0, 300);
