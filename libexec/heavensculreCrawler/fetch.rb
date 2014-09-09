@@ -3,7 +3,7 @@ require 'rubygems'
 require 'mechanize'
 require 'sqlite3'
 require 'fileutils'
-require 'Parallel'
+require 'parallel'
 
 
 if ARGV.length != 1
