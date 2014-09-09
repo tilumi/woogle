@@ -76,7 +76,7 @@
 			$scope.getNumber = function(){
 				var pages = []
 				var currentPage = $scope.page - 5;
-				while(pages.length < 10 || currentPage < numOfPages){
+				while(pages.length < 10 && currentPage < numOfPages){
 					if(currentPage >= 0){
 						pages.push(currentPage);						
 					}
