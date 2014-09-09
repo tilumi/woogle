@@ -9,6 +9,8 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.count.CountRequestBuilder;
+import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -64,6 +66,23 @@ public class ElasticSearchDao {
 		hits = response.getHits();
 		client.close();
 		return hits;
+	}
+
+	public static long getCount(String q) {
+		Client client = ElasticSearchConnection.get();
+		Fuzziness fuzziness = Fuzziness.ZERO;
+		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
+				.fuzzyLikeThisQuery("content", "title").fuzziness(fuzziness)
+				.likeText(q).maxQueryTerms(12);
+		CountRequestBuilder search = client
+				.prepareCount(IndexConstants.INDEX_PROVIDENCE)
+				.setTypes(IndexConstants.TYPE_WORD)
+				.setQuery(fuzzyLikeThisQuery);
+
+		CountResponse response = search.execute().actionGet();
+		long count = response.getCount();
+		client.close();
+		return count;
 	}
 
 	public static GetResponse get(String id) {

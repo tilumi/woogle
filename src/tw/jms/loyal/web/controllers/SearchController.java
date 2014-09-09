@@ -111,8 +111,11 @@ public class SearchController {
 					}).collect(Collectors.toList());
 			model.addAttribute("result",
 					SerializationUtils.toJsonString(result));
-			model.addAttribute("numOfPages",
-					EnvProperty.getInt(EnvConstants.NUM_OF_PAGES));
+
+			long count = ElasticSearchDao.getCount(q);
+			long numOfPages = (count / EnvProperty
+					.getInt(EnvConstants.HITS_PER_PAGE)) + 1;
+			model.addAttribute("numOfPages", numOfPages);
 			return "search/result";
 		}
 	}
