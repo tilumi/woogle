@@ -24,6 +24,14 @@
             "searchAnalyzer":"ik",
             "include_in_all":"true",
             "boost":5
+         },"category":{  
+            "type":"string",
+            "store":"no",
+            "term_vector":"with_positions_offsets_payloads",
+            "indexAnalyzer":"ik",
+            "searchAnalyzer":"ik",
+            "include_in_all":"true",
+            "boost":5
          },"html":{  
             "type":"string",
             "index" : "no",

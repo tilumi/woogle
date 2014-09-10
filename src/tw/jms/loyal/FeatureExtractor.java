@@ -2,8 +2,12 @@ package tw.jms.loyal;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,6 +38,8 @@ public class FeatureExtractor {
 			"yyyy年M月d日", Locale.TAIWAN);
 	private static SimpleDateFormat toDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
+	private static final String[] categories = { "主日", "週三", "箴言", "啟示", "見證",
+			"自行禱告會", "其他" };
 
 	public static String getPublishDate(String fileName, String nonHtmlContent) {
 		// LOG.info(nonHtmlContent);
@@ -48,5 +54,23 @@ public class FeatureExtractor {
 			}
 		}
 		return "";
+	}
+
+	public static String getCategory(String fileName, String nonHtmlContent) {
+		Map<String, Integer> categoryIndexMap = new HashMap<String, Integer>();
+		for (String category : categories) {
+			int index = (fileName + " " + nonHtmlContent).indexOf(category);
+			if (index >= 0) {
+				categoryIndexMap.put(category, index);
+			}
+		}
+		Entry<String, Integer> leastIndexEntry = new SimpleEntry<String, Integer>(
+				categories[categories.length - 1], Integer.MAX_VALUE);
+		for (Entry<String, Integer> entry : categoryIndexMap.entrySet()) {
+			if(entry.getValue() < leastIndexEntry.getValue()){
+				leastIndexEntry = entry;
+			}
+		}
+		return leastIndexEntry.getKey();
 	}
 }

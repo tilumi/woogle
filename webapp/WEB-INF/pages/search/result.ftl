@@ -25,7 +25,7 @@
 		</div>
 		<div class="col-xs-8 col-sm-8 col-md-8 col-lg-8">
 			<div ng-repeat="content in result">
-				<div class="title" ><a href="/document/{{content.id}}.html" ><h4 ng-bind-html="content.publishDate + ' ' + content.title"></h4></a></div>
+				<div class="title" ><a href="/document/{{content.id}}.html" ><h4 ng-bind-html="content.publishDate + ' [' + content.category + '] ' +content.title"></h4></a></div>
 				<pre ng-bind-html="content.content"></pre>				
 			</div>
 			<div class="text-center">

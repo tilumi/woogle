@@ -168,6 +168,7 @@ public class DocumentImporter {
 			String title = FeatureExtractor.getTitle(htmlContent);
 			String publishDate = FeatureExtractor.getPublishDate(
 					word.getName(), content);
+			String category = FeatureExtractor.getCategory(word.getName(), content);
 			String lastModified = metadata.get(Metadata.LAST_MODIFIED);
 			if (publishDate == null || publishDate.isEmpty()) {
 				publishDate = lastModified;
@@ -175,8 +176,9 @@ public class DocumentImporter {
 			if (title == null || title.isEmpty()) {
 				title = word.getName();
 			}
-			importToES(client, title, publishDate, lastModified, content,
-					htmlContent, force);
+			LOG.info("file: " + word.getName());
+			importToES(client, title, publishDate, category, lastModified,
+					content, htmlContent, force);
 			System.out.println("Files to index: " + i + "/" + files.size());
 			i++;
 		}
@@ -185,8 +187,8 @@ public class DocumentImporter {
 	}
 
 	private static void importToES(Client client, String title,
-			String publishDate, String lastModified, String content,
-			String htmlContent, boolean force) {
+			String publishDate, String category, String lastModified,
+			String content, String htmlContent, boolean force) {
 		String id = Md5Utils.getMD5String(content);
 		boolean isStoreInSimplifiedChinese = EnvProperty
 				.getBoolean(EnvConstants.IS_STORE_IN_SIMPLIFIED_CHINESE);
@@ -208,8 +210,10 @@ public class DocumentImporter {
 		json.put("title", title);
 		json.put("content", content);
 		json.put("html", htmlContent);
+		json.put("category", category);
 		json.put("publishDate", publishDate);
 		json.put("lastModified", lastModified);
+		LOG.info("Category: " + category);
 		LOG.info("Title: " + title);
 		LOG.info("Publish Date: " + publishDate);
 		LOG.info("Last Modified: " + lastModified);
