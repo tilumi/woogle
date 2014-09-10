@@ -32,7 +32,7 @@
 				<ul class="pagination">
 					<#-- <li ng-class="{'disabled': page == 1}"><a ng-disabled= "page == 1" href="?page={{page-1}}&amp;q={{q}}">&laquo;</a></li> -->
 
-					<li ng-class="{'active': ($index+1) == page}" ng-repeat="i in getNumber() track by $index" ><a href="?q={{q}}&amp;page={{$index+1}}">{{$index+1}} <span class="sr-only">(current)</span></a></li>			
+					<li ng-class="{'active': (i) == page}" ng-repeat="i in getNumber() track by $index" ><a href="?q={{q}}&amp;page={{i}}">{{i}} <span class="sr-only">(current)</span></a></li>			
 					<#-- <li><a href="?page={{page+1}}&amp;q={{q}}">&raquo;</a></li> -->
 				</ul>
 			</div>
@@ -75,9 +75,9 @@
 			$scope.result = result;
 			$scope.getNumber = function(){
 				var pages = []
-				var currentPage = $scope.page - 5;
-				while(pages.length < 10 && currentPage < numOfPages){
-					if(currentPage >= 0){
+				var currentPage = parseInt($scope.page) - 5;
+				while(pages.length < 10 && currentPage <= numOfPages){
+					if(currentPage > 0){
 						pages.push(currentPage);						
 					}
 					currentPage++;
