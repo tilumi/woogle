@@ -101,12 +101,22 @@ public class SearchController {
 							content = hit.get("content").toString()
 									.substring(0, 100);
 						}
+						String category = "";
+						try {
+							Text[] contentHLFragments = searchHit
+									.highlightFields().get("category")
+									.getFragments();
+							category = contentHLFragments[0].toString();
+						} catch (Exception e) {
+							category = hit.get("category").toString();									
+						}
 						if (isStoreInSimplifiedChinese) {
 							content = traditionalConverter.convert(content);
 							title = traditionalConverter.convert(title);
 						}
 						hit.put("content", content);
 						hit.put("title", title);
+						hit.put("category", category);
 						return hit;
 					}).collect(Collectors.toList());
 			model.addAttribute("result",

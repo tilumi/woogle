@@ -43,8 +43,8 @@ public class ElasticSearchDao {
 				"lastModified", currentDate, "90d");
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
-				.fuzzyLikeThisQuery("content", "title").fuzziness(fuzziness)
-				.likeText(q).maxQueryTerms(12);
+				.fuzzyLikeThisQuery("content", "title", "category")
+				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
 		SearchRequestBuilder search = client
@@ -53,6 +53,7 @@ public class ElasticSearchDao {
 				.setQuery(functionScoreQueryBuilder).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
 				.addHighlightedField("title", 100, 1)
+				.addHighlightedField("category", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>");
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
@@ -72,7 +73,7 @@ public class ElasticSearchDao {
 		Client client = ElasticSearchConnection.get();
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
-				.fuzzyLikeThisQuery("content", "title").fuzziness(fuzziness)
+				.fuzzyLikeThisQuery("content", "title", "category").fuzziness(fuzziness)
 				.likeText(q).maxQueryTerms(12);
 		CountRequestBuilder search = client
 				.prepareCount(IndexConstants.INDEX_PROVIDENCE)
