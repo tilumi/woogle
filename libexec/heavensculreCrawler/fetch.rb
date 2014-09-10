@@ -95,7 +95,7 @@ boards.each do |board|
 	board_page = @agent.get("http://heavensculture.com/index.php?board=#{board[:id]}.0")
 	max_page_number = get_last_page_number(board_page)
 	p "last_page: #{max_page_number}"
-	Parallel.each((1..max_page_number), :in_processes=>4) do |page_num|
+	(1..max_page_number).each do |page_num|
 		p page_num
 		if page_num > 1
 			board_page = goto_page(board_page, page_num)
