@@ -28,12 +28,10 @@ currentDateTime=`date +"%Y-%m-%d_%H-%M-%S"`
 
 if [ "$action" == "start" ]; then
 	nohup java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.WebSearchEngine > /var/log/woogle/"$currentDateTime"_web.log &	
-elif [ "$action" == "download" ]; then
-	source etc/config-default.properties
-	source etc/config.properties
+elif [ "$action" == "download" ]; then	
 	cd libexec/heavensculreCrawler
 	bundle
-	ruby fetch.rb "$WORD_DIR"
+	ruby fetch.rb $@
 elif [ "$action" == "import" ]; then
 	kill -9 $(ps aux | grep office | grep -v grep | awk '{print $2}')
 	java -cp "woogle-0.0.1-SNAPSHOT.jar:etc:lib/*" tw.jms.loyal.DocumentImporter $@
