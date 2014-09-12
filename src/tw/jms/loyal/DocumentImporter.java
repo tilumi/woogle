@@ -144,7 +144,7 @@ public class DocumentImporter {
 		Collection<File> files = null;
 		if (new File(inputFolder).isDirectory()) {
 			files = FileUtils.listFiles(new File(inputFolder),
-					new String[] { "docx" }, true);
+					new String[] { "docx", "doc" }, true);
 		} else {
 			files = new ArrayList<File>();
 			files.add(new File(inputFolder));
@@ -157,6 +157,7 @@ public class DocumentImporter {
 				i++;
 				continue;
 			}
+			LOG.info("Import: " + word.getName());
 			InputStream in = new FileInputStream(word);
 			BodyContentHandler textHandler = new BodyContentHandler();
 			Metadata metadata = new Metadata();
