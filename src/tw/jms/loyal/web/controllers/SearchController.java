@@ -76,15 +76,15 @@ public class SearchController {
 								.fromJsonString(searchHit.getSourceAsString(),
 										HashMap.class);
 						hit.put("id", searchHit.getId());
-						String content = "";
-						String title = "";
+						String content = hit.get("content").toString();
+						String title = hit.get("title").toString();
+						String category = hit.get("category").toString(); 
 						try {
 							Text[] titleHLFragments = searchHit
 									.highlightFields().get("title")
 									.getFragments();
 							title = titleHLFragments[0].toString();
 						} catch (Exception e) {
-							title = hit.get("title").toString();
 						}
 						try {
 							hit.put("publishDate", hit.get("publishDate")
@@ -98,10 +98,12 @@ public class SearchController {
 									.getFragments();
 							content = contentHLFragments[0].toString();
 						} catch (Exception e) {
+							try{
 							content = hit.get("content").toString()
 									.substring(0, 100);
+							}catch(Exception ex){}
 						}
-						String category = "";
+						
 						try {
 							Text[] contentHLFragments = searchHit
 									.highlightFields().get("category")
