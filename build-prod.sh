@@ -9,7 +9,9 @@ mkdir -p output/etc
 mkdir -p output/bin
 mkdir -p output/lib
 mkdir -p output/libexec
-sudo mkdir -p /var/log/woogle
+if [ ! -f /var/log/woogle ]; then
+    sudo mkdir -p /var/log/woogle
+fi
 mkdir -p output/pid
 
 cp -r webapp output

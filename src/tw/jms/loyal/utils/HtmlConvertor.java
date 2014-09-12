@@ -18,7 +18,7 @@ public class HtmlConvertor {
 	public static OfficeManager officeManager;
 	
 	public static String convert(File file, String htmlFolder,  boolean force) throws IOException {
-		FileUtils.forceMkdir(LocalPathConstants.HTML_OUTPUT_DIR.toFile());
+		FileUtils.forceMkdir(new  File(htmlFolder));
 		if (officeManager == null) {
 			officeManager = new DefaultOfficeManagerConfiguration()
 					.setOfficeHome(EnvProperty.getString(EnvConstants.OFFICE_HOME))
