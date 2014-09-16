@@ -19,6 +19,7 @@ import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.FuzzyLikeThisQueryBuilder;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -51,9 +52,10 @@ public class ElasticSearchDao {
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
 				.fuzzyLikeThisQuery("content", "title", "category")
 				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
-		TermQueryBuilder contentTermQuery = QueryBuilders.termQuery("content",
-				q);
-		TermQueryBuilder titleTermQuery = QueryBuilders.termQuery("title", q);
+		MatchQueryBuilder contentTermQuery = QueryBuilders.matchPhraseQuery(
+				"content", q);
+		MatchQueryBuilder titleTermQuery = QueryBuilders.matchPhraseQuery(
+				"title", q);
 		FunctionScoreQueryBuilder functionScoreContentTermQuery = new FunctionScoreQueryBuilder(
 				contentTermQuery).add(scoreFunction);
 		FunctionScoreQueryBuilder functionScoreTitleTermQuery = new FunctionScoreQueryBuilder(
@@ -63,26 +65,27 @@ public class ElasticSearchDao {
 		// FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
 		// functionScoreQueryBuilder, dateRangeFilter);
 		BoolQueryBuilder query = QueryBuilders.boolQuery()
-				.must(functionScoreContentTermQuery)
-				.should(functionScoreTitleTermQuery)
-				.should(functionScoreFLQuery.boost(0.3f));
+				.should(functionScoreContentTermQuery.boost(50f))
+				.should(functionScoreTitleTermQuery.boost(50f))
+				.should(functionScoreFLQuery);
 
+		// TermQueryBuilder query = QueryBuilders.termQuery("content", q);
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD).setQuery(query)
-				.setFrom(from).setSize(size)
+				.setFrom(from).setSize(size).setHighlighterOrder("score")
 				.addHighlightedField("content", 100, 1)
 				.addHighlightedField("title", 100, 1)
 				.addHighlightedField("category", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>");
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
-			// search.setExplain(true);
-			// LOG.info("request: " + search.toString());
+			search.setExplain(true);
+			LOG.info("request: " + search.toString());
 		}
 		SearchResponse response = search.execute().actionGet();
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
-			// LOG.info("response: " + response.toString());
+			LOG.info("response: " + response.toString());
 		}
 		hits = response.getHits();
 		client.close();
