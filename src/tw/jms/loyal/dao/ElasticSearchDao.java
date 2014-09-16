@@ -63,9 +63,9 @@ public class ElasticSearchDao {
 		// FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
 		// functionScoreQueryBuilder, dateRangeFilter);
 		BoolQueryBuilder query = QueryBuilders.boolQuery()
-				.should(functionScoreContentTermQuery)
+				.must(functionScoreContentTermQuery)
 				.should(functionScoreTitleTermQuery)
-				.should(functionScoreFLQuery.boost(0.6f));
+				.should(functionScoreFLQuery.boost(0.3f));
 
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
