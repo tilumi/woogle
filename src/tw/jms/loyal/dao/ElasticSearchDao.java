@@ -52,12 +52,14 @@ public class ElasticSearchDao {
 				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
-		FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
-				functionScoreQueryBuilder, dateRangeFilter);
+//		FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
+//				functionScoreQueryBuilder, dateRangeFilter);
+//		QueryBuilders.boolQuery().should(QueryBuilders.termQuery("content", q)).should(QueryBuilders.termQuery("content", q)).should();
+		
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD)
-				.setQuery(filteredQuery).setFrom(from)
+				.setQuery(functionScoreQueryBuilder).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
 				.addHighlightedField("title", 100, 1)
 				.addHighlightedField("category", 100, 1)
