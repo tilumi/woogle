@@ -68,7 +68,7 @@
 		<property name="dao" ref="dao" />
 	</bean>
 
-	<bean id="dao" class="tw.jms.loyal.dao.DaoFromSqlite"></bean>
+	
 
 	<bean id="clientProvider"
 		class="org.pac4j.springframework.security.authentication.ClientAuthenticationProvider">

@@ -1,6 +1,6 @@
 package tw.jms.loyal;
 
-import tw.jms.loyal.dao.DaoFromSqlite;
+import tw.jms.loyal.dao.DaoSqliteImpl;
 import tw.jms.loyal.dao.ElasticSearchDao;
 import tw.jms.loyal.utils.IndexConstants;
 
@@ -15,15 +15,15 @@ public class DbAdmin {
 		} else if (args[0].equals("destroy")) {
 			ElasticSearchDao.deleteIndex(IndexConstants.INDEX_PROVIDENCE);
 		} else if (args[0].equals("init_user_db")) {
-			DaoFromSqlite dao = new DaoFromSqlite();
+			DaoSqliteImpl dao = new DaoSqliteImpl();
 			dao.initialize();
 		} else if (args[0].equals("add_user") && args.length == 2) {
 			String user = args[1];
-			DaoFromSqlite dao = new DaoFromSqlite();
+			DaoSqliteImpl dao = new DaoSqliteImpl();
 			dao.addUser(user);
 		} else if (args[0].equals("delete_user") && args.length == 2) {
 			String user = args[1];
-			DaoFromSqlite dao = new DaoFromSqlite();
+			DaoSqliteImpl dao = new DaoSqliteImpl();
 			dao.deleteUser(user);
 		} else {
 			printUsage();

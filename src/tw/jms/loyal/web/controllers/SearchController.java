@@ -1,28 +1,35 @@
 package tw.jms.loyal.web.controllers;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Resource;
+
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.search.SearchHits;
-import org.pac4j.oauth.profile.google2.Google2Profile;
 import org.pac4j.springframework.security.authentication.ClientAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import tw.jms.loyal.annotation.Loggable;
+import tw.jms.loyal.dao.Dao;
 import tw.jms.loyal.dao.ElasticSearchDao;
+import tw.jms.loyal.model.PoorResultReport;
 import tw.jms.loyal.property.EnvConstants;
 import tw.jms.loyal.property.EnvProperty;
 import tw.jms.loyal.utils.SerializationUtils;
@@ -35,19 +42,32 @@ public class SearchController {
 
 	private static Logger LOG = Logger.getLogger(SearchController.class);
 
+	@Resource
+	Dao dao;
+
+	@RequestMapping(value = "reportPoorResult", method = RequestMethod.POST)
+	public @ResponseBody String reportPoorResult(Authentication authentication,
+			@RequestBody final PoorResultReport poorResultReport) {
+		String user = null;
+		try {
+			user = (String) ((ClientAuthenticationToken) authentication)
+					.getUserProfile().getAttribute("email");
+		} catch (Exception e) {
+		}
+		if (user == null) {
+			return "";
+		}
+		String searchTerm = poorResultReport.getSearchTerm();
+		dao.logPoorResult(user, searchTerm, System.currentTimeMillis());
+		return "";
+	}
+
+	@Loggable
 	@RequestMapping(value = "index", method = RequestMethod.GET)
 	public String index(Model model, @RequestParam(required = false) String q,
-			@RequestParam(required = false) Integer page)
+			@RequestParam(required = false) Integer page,
+			@RequestHeader(value = "Referer") String referrer)
 			throws JsonParseException, JsonMappingException, IOException {
-		Authentication token = SecurityContextHolder.getContext()
-				.getAuthentication();
-		if (token instanceof ClientAuthenticationToken) {
-			ClientAuthenticationToken clientToken = (ClientAuthenticationToken) token;
-			Google2Profile userProfile = (Google2Profile) clientToken
-					.getUserProfile();
-			model.addAttribute("user", userProfile.getEmail());
-		}
-
 		if (q == null || q.isEmpty()) {
 			return "search/index";
 		} else {
@@ -61,7 +81,7 @@ public class SearchController {
 			if (isStoreInSimplifiedChinese) {
 				q = simplifiedConverter.convert(q);
 			}
-			if (page == null) {
+			if (page == null || page <= 0) {
 				page = 1;
 			}
 			int from = (page - 1)
@@ -78,7 +98,10 @@ public class SearchController {
 						hit.put("id", searchHit.getId());
 						String content = hit.get("content").toString();
 						String title = hit.get("title").toString();
-						String category = hit.get("category").toString(); 
+						String category = "";
+						if (hit.get("category") != null) {
+							category = hit.get("category").toString();
+						}
 						try {
 							Text[] titleHLFragments = searchHit
 									.highlightFields().get("title")
@@ -98,19 +121,20 @@ public class SearchController {
 									.getFragments();
 							content = contentHLFragments[0].toString();
 						} catch (Exception e) {
-							try{
-							content = hit.get("content").toString()
-									.substring(0, 100);
-							}catch(Exception ex){}
+							try {
+								content = hit.get("content").toString()
+										.substring(0, 100);
+							} catch (Exception ex) {
+							}
 						}
-						
+
 						try {
 							Text[] contentHLFragments = searchHit
 									.highlightFields().get("category")
 									.getFragments();
 							category = contentHLFragments[0].toString();
 						} catch (Exception e) {
-							category = hit.get("category").toString();									
+
 						}
 						if (isStoreInSimplifiedChinese) {
 							content = traditionalConverter.convert(content);

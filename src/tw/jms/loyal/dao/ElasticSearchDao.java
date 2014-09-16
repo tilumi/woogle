@@ -16,8 +16,11 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.FilteredQueryBuilder;
 import org.elasticsearch.index.query.FuzzyLikeThisQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeFilterBuilder;
 import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilder;
 import org.elasticsearch.index.query.functionscore.gauss.GaussDecayFunctionBuilder;
@@ -41,28 +44,32 @@ public class ElasticSearchDao {
 		String currentDate = DateTimeUtils.getDate(System.currentTimeMillis());
 		ScoreFunctionBuilder scoreFunction = new GaussDecayFunctionBuilder(
 				"lastModified", currentDate, "90d");
+		RangeFilterBuilder dateRangeFilter = FilterBuilders
+				.rangeFilter("publishDate").from("2013-01-01").to("2013-12-31");
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
 				.fuzzyLikeThisQuery("content", "title", "category")
 				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
 		FunctionScoreQueryBuilder functionScoreQueryBuilder = new FunctionScoreQueryBuilder(
 				fuzzyLikeThisQuery).add(scoreFunction);
+		FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
+				functionScoreQueryBuilder, dateRangeFilter);
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD)
-				.setQuery(functionScoreQueryBuilder).setFrom(from)
+				.setQuery(filteredQuery).setFrom(from)
 				.setSize(size).addHighlightedField("content", 100, 1)
 				.addHighlightedField("title", 100, 1)
 				.addHighlightedField("category", 100, 1)
 				.setHighlighterPreTags("<em class='highlight'>")
 				.setHighlighterPostTags("</em>");
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
-			search.setExplain(true);
-			LOG.info("request: " + search.toString());
+//			search.setExplain(true);
+//			LOG.info("request: " + search.toString());
 		}
 		SearchResponse response = search.execute().actionGet();
 		if (EnvProperty.getBoolean(EnvConstants.DEBUG)) {
-			LOG.info("response: " + response.toString());
+//			LOG.info("response: " + response.toString());
 		}
 		hits = response.getHits();
 		client.close();
@@ -73,8 +80,8 @@ public class ElasticSearchDao {
 		Client client = ElasticSearchConnection.get();
 		Fuzziness fuzziness = Fuzziness.ZERO;
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
-				.fuzzyLikeThisQuery("content", "title", "category").fuzziness(fuzziness)
-				.likeText(q).maxQueryTerms(12);
+				.fuzzyLikeThisQuery("content", "title", "category")
+				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
 		CountRequestBuilder search = client
 				.prepareCount(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD)

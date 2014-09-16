@@ -42,8 +42,7 @@ public class ValidateUserFilter implements Filter {
 		if (token instanceof AnonymousAuthenticationToken) {
 			chain.doFilter(request, response);
 		} else {
-			ClientAuthenticationToken clientToken = (ClientAuthenticationToken) SecurityContextHolder
-					.getContext().getAuthentication();
+			ClientAuthenticationToken clientToken = (ClientAuthenticationToken)token;
 			Google2Profile userProfile = (Google2Profile) clientToken
 					.getUserProfile();
 			String email = userProfile.getEmail();

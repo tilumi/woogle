@@ -14,18 +14,6 @@ public class HomeController {
 
 	@RequestMapping("index")
 	public String index(Model model) {
-		try {
-			Authentication token = SecurityContextHolder.getContext()
-					.getAuthentication();
-			if (token instanceof ClientAuthenticationToken) {
-				ClientAuthenticationToken clientToken = (ClientAuthenticationToken) token;
-				Google2Profile userProfile = (Google2Profile) clientToken
-						.getUserProfile();
-				model.addAttribute("user", userProfile.getEmail());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 		return "home/index";
 	}
 }

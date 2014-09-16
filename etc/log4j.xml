@@ -10,6 +10,10 @@
 			<param name="ConversionPattern" value="[%d{yyyy-MM-dd HH:mm:ss}][%-5p] (%c{1}:%L) : %m%n" />
 		</layout>
 	</appender>
+	
+	<logger name="org.aspectj">
+		<level value="DEBUG" />
+	</logger>
 
 	<logger name="tw.jms.loyal">
 		<level value="INFO" />
