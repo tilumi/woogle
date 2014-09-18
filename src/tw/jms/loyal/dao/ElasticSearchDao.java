@@ -52,20 +52,20 @@ public class ElasticSearchDao {
 		FuzzyLikeThisQueryBuilder fuzzyLikeThisQuery = QueryBuilders
 				.fuzzyLikeThisQuery("content", "title", "category")
 				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
-		MatchQueryBuilder contentTermQuery = QueryBuilders.matchPhraseQuery(
-				"content", q).cutoffFrequency(0.001f);
-		MatchQueryBuilder titleTermQuery = QueryBuilders.matchPhraseQuery(
-				"title", q).cutoffFrequency(0.001f);
-		FunctionScoreQueryBuilder functionScoreContentTermQuery = new FunctionScoreQueryBuilder(
-				contentTermQuery).add(scoreFunction);
-		FunctionScoreQueryBuilder functionScoreTitleTermQuery = new FunctionScoreQueryBuilder(
-				titleTermQuery).add(scoreFunction);
-		FunctionScoreQueryBuilder functionScoreFLQuery = new FunctionScoreQueryBuilder(
-				fuzzyLikeThisQuery).add(scoreFunction);		
-		BoolQueryBuilder query = QueryBuilders.boolQuery()
-				.should(functionScoreContentTermQuery.boost(50f))
-				.should(functionScoreTitleTermQuery.boost(50f))
-				
+		MatchQueryBuilder contentQuery = QueryBuilders.matchQuery("content", q)
+				.cutoffFrequency(0.005f);
+		MatchQueryBuilder titleQuery = QueryBuilders.matchQuery("title", q)
+				.cutoffFrequency(0.005f);
+		MatchQueryBuilder contentPhraseQuery = QueryBuilders.matchPhraseQuery(
+				"content", q).cutoffFrequency(0.005f);
+		MatchQueryBuilder titlePhraseQuery = QueryBuilders.matchPhraseQuery(
+				"title", q).cutoffFrequency(0.005f);
+		BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+				.should(contentPhraseQuery.boost(50f))
+				.should(titlePhraseQuery.boost(50f)).should(contentQuery)
+				.should(titleQuery);
+		FunctionScoreQueryBuilder query = new FunctionScoreQueryBuilder(
+				boolQuery).add(scoreFunction);
 
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
