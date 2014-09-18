@@ -65,7 +65,7 @@ public class ElasticSearchDao {
 		BoolQueryBuilder query = QueryBuilders.boolQuery()
 				.should(functionScoreContentTermQuery.boost(50f))
 				.should(functionScoreTitleTermQuery.boost(50f))
-				.should(functionScoreFLQuery);
+				
 
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
