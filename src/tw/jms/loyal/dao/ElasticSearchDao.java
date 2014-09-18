@@ -53,23 +53,20 @@ public class ElasticSearchDao {
 				.fuzzyLikeThisQuery("content", "title", "category")
 				.fuzziness(fuzziness).likeText(q).maxQueryTerms(12);
 		MatchQueryBuilder contentTermQuery = QueryBuilders.matchPhraseQuery(
-				"content", q);
+				"content", q).cutoffFrequency(0.001f);
 		MatchQueryBuilder titleTermQuery = QueryBuilders.matchPhraseQuery(
-				"title", q);
+				"title", q).cutoffFrequency(0.001f);
 		FunctionScoreQueryBuilder functionScoreContentTermQuery = new FunctionScoreQueryBuilder(
 				contentTermQuery).add(scoreFunction);
 		FunctionScoreQueryBuilder functionScoreTitleTermQuery = new FunctionScoreQueryBuilder(
 				titleTermQuery).add(scoreFunction);
 		FunctionScoreQueryBuilder functionScoreFLQuery = new FunctionScoreQueryBuilder(
-				fuzzyLikeThisQuery).add(scoreFunction);
-		// FilteredQueryBuilder filteredQuery = QueryBuilders.filteredQuery(
-		// functionScoreQueryBuilder, dateRangeFilter);
+				fuzzyLikeThisQuery).add(scoreFunction);		
 		BoolQueryBuilder query = QueryBuilders.boolQuery()
 				.should(functionScoreContentTermQuery.boost(50f))
 				.should(functionScoreTitleTermQuery.boost(50f))
 				.should(functionScoreFLQuery);
 
-		// TermQueryBuilder query = QueryBuilders.termQuery("content", q);
 		SearchRequestBuilder search = client
 				.prepareSearch(IndexConstants.INDEX_PROVIDENCE)
 				.setTypes(IndexConstants.TYPE_WORD).setQuery(query)

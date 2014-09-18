@@ -39,7 +39,7 @@ public class FeatureExtractor {
 	private static SimpleDateFormat toDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
 	private static final String[] categories = { "主日", "週三", "箴言", "啟示", "見證",
-			"自行禱告會", "其他" };
+			"其他" };
 
 	public static String getPublishDate(String fileName, String nonHtmlContent) {
 		// LOG.info(nonHtmlContent);
@@ -67,9 +67,12 @@ public class FeatureExtractor {
 		Entry<String, Integer> leastIndexEntry = new SimpleEntry<String, Integer>(
 				categories[categories.length - 1], Integer.MAX_VALUE);
 		for (Entry<String, Integer> entry : categoryIndexMap.entrySet()) {
-			if(entry.getValue() < leastIndexEntry.getValue()){
+			if (entry.getValue() < leastIndexEntry.getValue()) {
 				leastIndexEntry = entry;
 			}
+		}
+		if(leastIndexEntry.getKey().equals("見證")){
+			return "啟示";
 		}
 		return leastIndexEntry.getKey();
 	}
