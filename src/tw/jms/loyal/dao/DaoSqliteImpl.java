@@ -95,7 +95,7 @@ public class DaoSqliteImpl implements Dao {
 					+ "(user TEXT  NOT NULL, val TEXT NOT NULL, timestamp LONG NOT NULL)";
 			stmt.executeUpdate(sql);
 			sql = "CREATE TABLE IF NOT EXISTS poorResult "
-					+ "(user TEXT  NOT NULL, searchTerm TEXT NOT NULL, timestamp LONG NOT NULL)";
+					+ "(user TEXT  NOT NULL, searchTerm TEXT NOT NULL, desc TEXT NOT NULL, timestamp LONG NOT NULL)";
 			stmt.executeUpdate(sql);
 			stmt.close();
 		} catch (SQLException e) {
@@ -120,16 +120,18 @@ public class DaoSqliteImpl implements Dao {
 		}
 		return conn;
 	}
-	
+
 	@Override
-	public boolean logPoorResult(String user, String searchTerm, Long timestamp) {
+	public boolean logPoorResult(String user, String searchTerm, String desc,
+			Long timestamp) {
 		Connection conn = getConnection();
 		try {
 			PreparedStatement stmt = conn
-					.prepareStatement("INSERT INTO 'poorResult' (user, searchTerm, timestamp ) VALUES (?, ?, ?)");
+					.prepareStatement("INSERT INTO 'poorResult' (user, searchTerm, desc, timestamp ) VALUES (?, ?, ?, ?)");
 			stmt.setString(1, user);
 			stmt.setString(2, searchTerm);
-			stmt.setLong(3, timestamp);
+			stmt.setString(3, desc == null ? "" : desc);
+			stmt.setLong(4, timestamp);
 			stmt.executeUpdate();
 			stmt.close();
 			return true;

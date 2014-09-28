@@ -14,7 +14,8 @@
             "indexAnalyzer":"ik",
             "searchAnalyzer":"ik",
             "include_in_all":"true",
-            "boost":1
+            "boost":1,
+            "similarity": "BM25"
          },
          "title":{  
             "type":"string",
@@ -23,7 +24,8 @@
             "indexAnalyzer":"ik",
             "searchAnalyzer":"ik",
             "include_in_all":"true",
-            "boost":5
+            "boost":5,
+            "similarity": "BM25"
          },"category":{  
             "type":"string",
             "store":"no",

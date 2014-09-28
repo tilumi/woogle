@@ -58,7 +58,8 @@ public class SearchController {
 			return "";
 		}
 		String searchTerm = poorResultReport.getSearchTerm();
-		dao.logPoorResult(user, searchTerm, System.currentTimeMillis());
+		String desc = poorResultReport.getDesc();
+		dao.logPoorResult(user, searchTerm, desc, System.currentTimeMillis());
 		return "";
 	}
 

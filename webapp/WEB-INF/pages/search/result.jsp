@@ -25,7 +25,8 @@
 
 				<form class="navbar-form navbar-right" role="search">				
 					<span style="font-weight: bold;">為了提供更好地搜尋體驗，若此為不佳的搜尋結果，請按右邊按鈕幫忙舉報，感謝！</span>
-					<button type="submit" class="btn btn-danger" ng-show="reported==false" ng-click="reportPoorResult()">此為不佳的搜尋結果。</button>
+					<input type="text" name="poorResultDesc" id="inputPoorResultDesc" class="form-control " value="" placeholder="原因" required="required" pattern="" title="" ng-model="poorResultDesc">					
+					<button type="submit" class="btn btn-danger" ng-show="reported==false" ng-click="reportPoorResult()">送出</button>
 					<button type="submit" class="btn btn-success" ng-show="reported==true">感謝您的回覆！</button>
 				</form>
 			</div>
@@ -132,7 +133,7 @@
 					$http({
 						method: 'POST',
 						url: 'reportPoorResult.html',
-						data: {searchTerm: queryParams['q']}
+						data: {searchTerm: queryParams['q'], desc: $scope.poorResultDesc}
 					}).success(function(){
 						$scope.reported=true;
 					})
